@@ -3,7 +3,15 @@ import { ExpoWebGLRenderingContext, GLView } from 'expo-gl';
 import { Renderer } from 'expo-three';
 import { Asset } from 'expo-asset';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader';
-import { PerspectiveCamera, Scene, AmbientLight, DirectionalLight } from 'three';
+import {
+  PerspectiveCamera,
+  Scene,
+  AmbientLight,
+  DirectionalLight,
+  Mesh,
+} from "three";
+import * as CANNON from "cannon-es";
+import * as THREE from 'three';
 
 export default function App() {
   const [modelUri, setModelUri] = React.useState<string | null>(null);
@@ -20,23 +28,19 @@ export default function App() {
     <GLView
       style={{ flex: 1 }}
       onContextCreate={async (gl: ExpoWebGLRenderingContext) => {
-        // WebGLRenderer 생성
         const renderer = new Renderer({ gl });
         renderer.setSize(gl.drawingBufferWidth, gl.drawingBufferHeight);
 
-        // Scene 생성
         const scene = new Scene();
 
-        // 카메라 설정
         const camera = new PerspectiveCamera(
           75,
           gl.drawingBufferWidth / gl.drawingBufferHeight,
           0.1,
           1000
         );
-        camera.position.z = 5;
+        camera.position.set(0, 5, 10);
 
-        // 조명 추가
         const ambientLight = new AmbientLight(0x404040, 3);
         scene.add(ambientLight);
 
@@ -44,29 +48,87 @@ export default function App() {
         directionalLight.position.set(1, 1, 1);
         scene.add(directionalLight);
 
-        // 모델 로드 (modelUri가 있을 때만 실행)
+        const world = new CANNON.World();
+        world.gravity.set(0, -9.82, 0);
+
+        const groundBody = new CANNON.Body({
+          mass: 0,
+          shape: new CANNON.Plane(),
+        });
+        groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+        groundBody.position.set(0, -1, 0);
+        world.addBody(groundBody);
+
+        const groundGeometry = new THREE.PlaneGeometry(10, 10);
+        const groundMaterial = new THREE.MeshStandardMaterial({ color: 0xaaaaaa });
+        const groundMesh = new THREE.Mesh(groundGeometry, groundMaterial);
+        groundMesh.rotation.x = -Math.PI / 2;
+        groundMesh.position.y = -1;
+        scene.add(groundMesh);
+
+        const diceBody = new CANNON.Body({
+          mass: 1,
+          shape: new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)),
+          position: new CANNON.Vec3(0, 5, 0),
+        });
+        world.addBody(diceBody);
+
+        let diceMesh: Mesh | null = null;
         if (modelUri) {
           const loader = new OBJLoader();
           loader.load(
             modelUri,
             (object) => {
+              object.scale.set(0.5, 0.5, 0.5);
               scene.add(object);
+              const findMesh = (obj: THREE.Object3D): THREE.Mesh | null => {
+                if (obj instanceof THREE.Mesh) {
+                  return obj;
+                }
+                for (const child of obj.children) {
+                  const mesh = findMesh(child);
+                  if (mesh) return mesh;
+                }
+                return null;
+              };
+
+              const mesh = findMesh(object);
+              if (mesh) {
+                diceMesh = mesh;
+              } else {
+                console.error("Mesh not found in loaded model");
+              }
             },
             undefined,
             (error) => {
-              console.error('모델 로딩 오류:', error);
+              console.error("error while loading model:", error);
             }
           );
-        } else {
-          console.warn('모델이 아직 로드되지 않았습니다.');
         }
 
-        // 렌더링 루프
         const render = () => {
           requestAnimationFrame(render);
+
+          world.step(1 / 60);
+
+          if (diceMesh) {
+            diceMesh.position.set(
+              diceBody.position.x,
+              diceBody.position.y,
+              diceBody.position.z
+            );
+            diceMesh.quaternion.set(
+              diceBody.quaternion.x,
+              diceBody.quaternion.y,
+              diceBody.quaternion.z,
+              diceBody.quaternion.w
+            );
+          }
+
           renderer.render(scene, camera);
           gl.endFrameEXP();
         };
+
         render();
       }}
     />
