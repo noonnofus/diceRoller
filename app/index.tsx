@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Platform, View, Button, Modal, Text } from 'react-native';
 import { ExpoWebGLRenderingContext, GLView } from 'expo-gl';
 import { Renderer } from 'expo-three';
 import { Asset } from 'expo-asset';
@@ -17,16 +18,27 @@ import { DeviceMotion } from "expo-sensors";
 export default function App() {
   const [modelUri, setModelUri] = React.useState<string | null>(null);
   const diceBodyRef = React.useRef<CANNON.Body | null>(null);
+  const [glContext, setGlContext] = React.useState<ExpoWebGLRenderingContext | null>(null);
+  const [showModal, setShowModal] = React.useState(Platform.OS === "web");
 
   React.useEffect(() => {
     async function loadModel() {
-      const [{ localUri }] = await Asset.loadAsync(require('../assets/dice/dice.obj'));
-      setModelUri(localUri);
+      const asset = Asset.fromModule(require('../assets/dice/dice.obj'));
+      await asset.downloadAsync();
+      setModelUri(asset.localUri || asset.uri);
+      console.log(asset.uri);
     }
     loadModel();
   }, []);
 
   React.useEffect(() => {
+    if (modelUri && glContext) {
+      onContextCreate(glContext);
+    }
+  }, [modelUri, glContext]);
+
+  React.useEffect(() => {
+    if (Platform.OS === "web") return;
     const subscription = DeviceMotion.addListener((data) => {
       const { accelerationIncludingGravity } = data;
 
@@ -42,7 +54,34 @@ export default function App() {
     return () => subscription.remove();
   }, []);
 
+  React.useEffect(() => {
+    window.addEventListener("keydown", moveDice);
+    return () => window.removeEventListener("keydown", moveDice);
+  }, []);
+
+  const moveDice = (event) => {
+    if (!diceBodyRef.current) return;
+
+    const speed = 4;
+    const currentY = diceBodyRef.current.velocity.y;
+    switch (event.key) {
+      case "w":
+        diceBodyRef.current.velocity.set(0, currentY, -speed);
+        break;
+      case "s":
+        diceBodyRef.current.velocity.set(0, currentY, speed);
+        break;
+      case "a":
+        diceBodyRef.current.velocity.set(-speed, currentY, 0);
+        break;
+      case "d":
+        diceBodyRef.current.velocity.set(speed, currentY, 0);
+        break;
+    }
+  };
+
   const onContextCreate = async (gl: ExpoWebGLRenderingContext) => {
+    setGlContext(gl);
     let diceMesh: Mesh | null = null;
 
     const renderer = new Renderer({ gl });
@@ -80,6 +119,8 @@ export default function App() {
     const groundBody = new CANNON.Body({
       mass: 0,
       shape: new CANNON.Plane(),
+      collisionFilterGroup: 2,
+      collisionFilterMask: 1,
     });
     groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
     groundBody.position.set(0, -1, 0);
@@ -121,6 +162,8 @@ export default function App() {
       mass: 1,
       shape: new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)),
       position: new CANNON.Vec3(0, 5, 0),
+      collisionFilterGroup: 1,
+      collisionFilterMask: 2,
       angularDamping: 0.1,
       linearDamping: 0.1,
     });
@@ -150,6 +193,8 @@ export default function App() {
         object.scale.set(0.5, 0.5, 0.5);
         scene.add(object);
 
+        console.log('the model: ', modelUri);
+
         const findMesh = (obj: THREE.Object3D): THREE.Mesh | null => {
           if (obj instanceof THREE.Mesh) return obj;
           for (const child of obj.children) {
@@ -162,16 +207,24 @@ export default function App() {
         const mesh = findMesh(object);
         if (mesh) {
           diceMesh = mesh;
+          if (!mesh.geometry.index) {
+            const indices = [];
+            for (let i = 0; i < mesh.geometry.attributes.position.count; i++) {
+              indices.push(i);
+            }
+            mesh.geometry.setIndex(indices);
+          }
         } else {
           console.error("Mesh not found in loaded model");
         }
       },
       undefined,
-      (error) => console.error("모델 로딩 오류:", error)
+      (error) => console.error("model loading error:", error)
     );
 
     const render = () => {
       requestAnimationFrame(render);
+
       world.step(1 / 60, 1 / 60, 10);
 
       if (diceMesh && diceBody) {
@@ -185,11 +238,43 @@ export default function App() {
       }
 
       renderer.render(scene, camera);
+
       gl.endFrameEXP();
     };
 
     render();
   };
 
-  return <GLView style={{ flex: 1 }} onContextCreate={onContextCreate} />;
+  return (
+    <>
+      <GLView style={{ flex: 1 }} onContextCreate={onContextCreate} />
+      {Platform.OS === "web" && (
+        <Modal visible={showModal} transparent animationType="fade">
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor: "rgba(0,0,0,0.5)",
+            }}
+          >
+            <View
+              style={{
+                backgroundColor: "white",
+                padding: 20,
+                borderRadius: 10,
+                alignItems: "center",
+              }}
+            >
+              <Text style={{ fontSize: 18, marginBottom: 10 }}>
+                You can move with "WASD" key!
+              </Text>
+              <Button title="Got it" onPress={() => setShowModal(false)} />
+            </View>
+          </View>
+        </Modal>
+      )}
+
+    </>
+  );
 };
