@@ -1,50 +1,34 @@
-# Welcome to your Expo app 👋
+# DiceRoller 🎲 – Physics Engine 3D Dice Rolling Simulation
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+![React Native](https://img.shields.io/badge/react_native-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Expo](https://img.shields.io/badge/expo-000020?style=for-the-badge&logo=expo&logoColor=white)
+![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
+![Cannon.js](https://img.shields.io/badge/cannon.js-ffcc00?style=for-the-badge&logo=three.js&logoColor=black)
+![Three.js](https://img.shields.io/badge/three.js-000000?style=for-the-badge&logo=three.js&logoColor=white)
 
-## Get started
+## 🌐 Demo  
+🔗 **Live Website:** [Try DiceRoller](https://diceroller-jet.vercel.app/)
 
-1. Install dependencies
+## 📜 Description  
+**DiceRoller** is a cross-platform web and mobile app that simulates realistic 3D dice rolls.  
+Users can interact with virtual dice using different device controls:
+- 📱 On mobile, shake the phone to roll
+- 💻 On web, use WASD keys to trigger the dice roll
 
-   ```bash
-   npm install
-   ```
+I built DiceRoller using **React Native (with Expo) and TypeScript**, and used **expo-three** for 3D rendering and **Cannon.js** for realistic physics simulation. The app is installable as a **Progressive Web App (PWA)** and works seamlessly across mobile and desktop devices.
 
-2. Start the app
+### 🚀 **Planned Features**
+- Improve physics engine
+- Add custom dice types (e.g., D20, D12, D4) 
+- Visual themes and dice skin customization
+- Sound effects and haptic feedback support
 
-   ```bash
-    npx expo start
-   ```
+## 📸 Screenshots  
+![Website Screenshot](./public/images/Flare_main.png)
+![Website Screenshot](./public/images/Flare_homepage.png)
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## 🛠️ Tech Stack  
+- **Cross-Platform Framework:** React Native (via Expo), TypeScript 
+- **3D Graphics:** expo-three, Three.js 
+- **Physics Engine:** Cannon.js 
+- **Platform Support:** React Native Web, Expo, Shake Detection (react-native-shake)  
