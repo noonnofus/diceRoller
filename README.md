@@ -12,10 +12,10 @@
 ## 📜 Description  
 **DiceRoller** is a cross-platform web and mobile app that simulates realistic 3D dice rolls.  
 Users can interact with virtual dice using different device controls:
-- 📱 On mobile, shake the phone to roll
-- 💻 On web, use WASD keys to trigger the dice roll
+- 📱 Shake the phone on mobile to roll
+- 💻 Use WASD keys on the web to trigger the roll
 
-I built DiceRoller using **React Native (with Expo) and TypeScript**, and used **expo-three** for 3D rendering and **Cannon.js** for realistic physics simulation. The app is installable as a **Progressive Web App (PWA)** and works seamlessly across mobile and desktop devices.
+I built DiceRoller using **React Native (with Expo)** and **TypeScript**, integrating **expo-three** for 3D rendering and **Cannon.js** for realistic physics simulation.  
 
 ### 🚀 **Planned Features**
 - Improve physics engine
@@ -24,11 +24,33 @@ I built DiceRoller using **React Native (with Expo) and TypeScript**, and used *
 - Sound effects and haptic feedback support
 
 ## 📸 Screenshots  
-![Website Screenshot](./public/images/Flare_main.png)
-![Website Screenshot](./public/images/Flare_homepage.png)
+![DiceRoller Screenshot](./assets/images/web-view.png)
+![DiceRoller Mobile](./assets/images/mobile-view.png)
 
 ## 🛠️ Tech Stack  
 - **Cross-Platform Framework:** React Native (via Expo), TypeScript 
 - **3D Graphics:** expo-three, Three.js 
 - **Physics Engine:** Cannon.js 
 - **Platform Support:** React Native Web, Expo, Shake Detection (react-native-shake)  
+
+## 📦 Installation
+
+### Prerequisites
+- Node.js (v18 or later)
+- Expo CLI (if not installed: `npm install -g expo-cli`)
+- Git
+
+### 🔧 Setup
+```bash
+# Clone the repository
+git clone https://github.com/BCITKevin/DiceRoller.git
+
+# Navigate into the project folder
+cd DiceRoller
+
+# Install dependencies
+npm install
+
+# Start the app with Expo
+npm start
+```
